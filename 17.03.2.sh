@@ -484,10 +484,18 @@ do_install() {
 
 			(
 			set -x
+			http_proxy_setttings=
+			if [ ! -z "$http_proxy" ]; then
+				http_proxy_settings="--keyserver-options http-proxy=${http_proxy}"
+			fi
+			https_proxy_settings=
+			if [ ! -z "$https_proxy" ]; then
+				https_proxy_settings="--keyserver-options https-proxy=${https_proxy}"
+			fi
                         for key_server in $key_servers ; do
-                                $sh_c "apt-key adv --keyserver hkp://${key_server}:80 --recv-keys ${gpg_fingerprint}" && break
+                                $sh_c "apt-key adv --keyserver hkp://${key_server}:80 ${http_proxy_settings} ${https_proxy_settings} --recv-keys ${gpg_fingerprint}" && break
                         done
-                        $sh_c "apt-key adv -k ${gpg_fingerprint} >/dev/null"
+                        $sh_c "apt-key adv  ${http_proxy_settings} ${https_proxy_settings} -k ${gpg_fingerprint} >/dev/null"
 			$sh_c "mkdir -p /etc/apt/sources.list.d"
 			$sh_c "echo deb \[arch=$(dpkg --print-architecture)\] ${apt_url}/repo ${lsb_dist}-${dist_version} ${repo} > /etc/apt/sources.list.d/docker.list"
 			$sh_c 'sleep 3; apt-get update; apt-get install -y -q docker-engine'
